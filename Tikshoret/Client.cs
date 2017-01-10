@@ -11,11 +11,17 @@ namespace Tikshoret
 {
     class Client
     {
-        #region sockets
+        #region fields
         byte[] received = null;
         UdpClient udpSender;
         UdpClient udpReciever;
         IPAddress[] ipArr;
+        bool tx = false;
+        byte[] byteToSend;
+        string portToConnectTcp;
+        TcpClient client;
+        string requestMessage;
+        bool ourIp = true;
         #endregion
 
 
@@ -37,29 +43,61 @@ namespace Tikshoret
             ipArr = ipEntry.AddressList;
             new Thread(() =>
             {
-                while (received == null)
+                while (ourIp)
                 {
                     received = udpReciever.Receive(ref recieveEP);
                     if (!ipArr.Contains(recieveEP.Address))
                     {
-                        string portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
+                        ourIp = false;
+                        portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
                         Console.WriteLine(portToConnectTcp);
-                        //
-                    }
-                    else
-                    {
-                        received = null;
                     }
                 }
             }).Start();
-            while (received == null)
+            //create the request msg
+            createRequestMsg();
+            while (ourIp)
             {
-                string toSend = "Hello shahar!";
-                byte[] byteToSend = System.Text.Encoding.UTF8.GetBytes(toSend);
+                //send the message to the server
                 udpSender.Send(byteToSend, byteToSend.Length);
                 Thread.Sleep(1000);
             }
+            //now we have the connect details to tcp
+            connectToTcp();
             Console.WriteLine("Finished");
+        }
+
+        private void createRequestMsg()
+        {
+            //create the request message
+            Random rnd = new Random();
+            int randomNumtoSend = rnd.Next();
+            byte[] rndNumByte = BitConverter.GetBytes(randomNumtoSend);
+            List<byte> byteToSendList = new List<byte>();
+            requestMessage = "Networking17YHSC";
+            //convert the message to bytes array
+            byteToSend = System.Text.Encoding.UTF8.GetBytes(requestMessage);
+            byteToSendList.AddRange(byteToSend);
+            byteToSendList.AddRange(rndNumByte);
+            byteToSend = byteToSendList.ToArray();
+        }
+
+        private void connectToTcp()
+        {
+            //change the status
+            tx = true;
+            //connect to the TCP
+
+            //seperate the string with the details to ip and port
+            client = new TcpClient();
+            try
+            {
+                // client.Connect()
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
         }
     }
 }

@@ -18,6 +18,9 @@ namespace Tikshoret
         IPEndPoint groupEP;
         int availablePort = 0;
         byte[] data = new byte[1024];
+        bool rx = false;
+        string hostName;
+        string progName = "Networking17YHSC";
 
         public Server(UdpClient uc)
         {
@@ -29,7 +32,7 @@ namespace Tikshoret
 
         private void buildIpArray()
         {
-            string hostName = Dns.GetHostName();
+            hostName = Dns.GetHostName();
             IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
             ipArr = ipEntry.AddressList;
         }
@@ -38,8 +41,12 @@ namespace Tikshoret
         {
             int startPort = 6001, stopPort = 7000;
             availablePort = findAvailablePort(startPort, stopPort);
-            IPEndPoint ep = new IPEndPoint(IPAddress.Any, availablePort);
-            tcpServer = new TcpClient(ep);
+            //open tcp
+            TcpListener listener = new TcpListener(IPAddress.Any,availablePort);
+            listener.Start();
+            Socket s = listener.AcceptSocket();
+            EndPoint ep = s.RemoteEndPoint;
+            Console.WriteLine("Connected to port {0} ip {1} compName {2}",s.RemoteEndPoint);
             //wait for a message
         }
 
@@ -66,16 +73,26 @@ namespace Tikshoret
                     {
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
                         Console.WriteLine("recieved {0}", msgRcvd);
-                        string msgToSent = "pong";
+                        //take the number that the client sent in request message
+                        byte[] offer = new byte[26];
+                        byte[] rndNum = new byte[4];
+                        rndNum[0] = data[16];
+                        rndNum[1] = data[17];
+                        rndNum[2] = data[18];
+                        rndNum[3] = data[19];
+                        //create the offer message
+                        List<byte> msgList = new List<byte>();
+                        string msgToSent = progName;
                         byte[] msg = System.Text.Encoding.UTF8.GetBytes(msgToSent);
-                        //check if any port of tcp in the range of 5000-6000 is currrently available
-                        //if (checkIfTcpAvail())
-                        //{
+                        msgList.AddRange(msg);
+                        byte[] ipByteArr = System.Text.Encoding.UTF8.GetBytes(ipArr[3].ToString());
+                        byte[] portByteArr = System.Text.Encoding.UTF8.GetBytes(availablePort.ToString());
+                        msgList.AddRange(ipByteArr);
+                        msgList.AddRange(portByteArr);
                         IPAddress broadcast = IPAddress.Parse("192.168.1.255");
                         groupEP.Address = broadcast;
                         groupEP.Port = 6000;
                         udpServer.Send(msg, msg.Length, groupEP);
-                        //}
                     }
                 }
             }
