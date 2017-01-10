@@ -44,6 +44,7 @@ namespace Tikshoret
                     {
                         string portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
                         Console.WriteLine(portToConnectTcp);
+                        //
                     }
                     else
                     {
