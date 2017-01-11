@@ -12,8 +12,10 @@ namespace Tikshoret
 {
     class Server
     {
+        #region fields
         UdpClient udpServer;
-        TcpClient tcpServer;
+        static Socket s;
+        static byte[] tcpData;
         IPAddress[] ipArr;
         IPEndPoint groupEP;
         Int16 availablePort = 0;
@@ -21,7 +23,7 @@ namespace Tikshoret
         public static bool rx = false;
         string hostName;
         string progName = "Networking17YHSC";
-        bool sent = false;
+        #endregion
 
         public Server(UdpClient uc)
         {
@@ -48,20 +50,27 @@ namespace Tikshoret
             //thread
             new Thread(() =>
             {
-                Socket s = listener.AcceptSocket();
-                //change the status
+                s = listener.AcceptSocket();
                 rx = true;
+                s.Receive(tcpData);
+                //rx=true && tx=false
+                if (!Client.tx)
+                {
+                    //print the message to the screen
+                    string msgToScreen = System.Text.Encoding.UTF8.GetString(tcpData);
+                    Console.WriteLine(msgToScreen);
+                }
+                Console.WriteLine();
+                //change the status
                 EndPoint ep = s.RemoteEndPoint;
                 Console.WriteLine("the server Connected to {0}", s.RemoteEndPoint);
             }).Start();
-
-           
-
-
             //wait for a message
         }
 
-      
+
+
+
 
         private static Int16 findAvailablePort(int startPort, int stopPort)
         {
@@ -79,12 +88,13 @@ namespace Tikshoret
             groupEP = new IPEndPoint(IPAddress.Any, 6000);
             try
             {
-                while (!sent)
+                while (!rx)
                 {
                     data = udpServer.Receive(ref groupEP);
 
                     if (!ipArr.Contains(groupEP.Address) && data.Length == 20)
                     {
+
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
                         Console.WriteLine("server recieved {0} length {1}", msgRcvd, data.Length);
                         //take the number that the client sent in request message
@@ -110,7 +120,7 @@ namespace Tikshoret
                         groupEP.Port = 6000;
                         udpServer.Client.SendTo(msg, groupEP);
                         Console.WriteLine("send offer");
-                        sent = true;
+                        rx = true;
                     }
                 }
             }
@@ -124,6 +134,22 @@ namespace Tikshoret
         private bool checkIfTcpAvail()
         {
             return false;
+        }
+
+        /// <summary>
+        /// get the msg tcp data and change it
+        /// </summary>
+        public static string malfunctionMsg()
+        {
+            Random r = new Random();
+            int charIndex = r.Next(tcpData.Length);
+            char rndChar = (char)r.Next(32, 127);
+            string tcpdataString = System.Text.Encoding.UTF8.GetString(tcpData);
+            char[] charStr = tcpdataString.ToCharArray();
+            charStr[charIndex] = rndChar;
+            string newString = new string(charStr);
+            Console.WriteLine(newString);
+            return newString;
         }
     }
 }

@@ -43,7 +43,7 @@ namespace Tikshoret
             ipArr = ipEntry.AddressList;
             new Thread(() =>
             {
-                while (!tx)
+                while (!tx && !Server.rx)
                 {
                     received = udpReciever.Receive(ref recieveEP);
                     if (!ipArr.Contains(recieveEP.Address))
@@ -61,14 +61,13 @@ namespace Tikshoret
             }).Start();
             //create the request msg
             createRequestMsg();
-            while (!tx)
+            while (!tx && !Server.rx)
             {
                 //send the message to the server
                 udpSender.Send(byteToSend, byteToSend.Length);
                 Console.WriteLine("The client send the requst message");
                 Thread.Sleep(800);
             }
-            while (offer == null) ;
             //now we have the connect details to tcp
             connectToTcp();
         }
@@ -122,21 +121,19 @@ namespace Tikshoret
             //rx=false && tx=true
             if (!Server.rx && tx)
             {
-                new Thread(() =>
-                {
-                    //rx-off tx-on
-                    if (!Server.rx && tx)
-                    {
-                        string input = getInputFromTheUser();
-                        //convert to byte array
-                        byte[] sentToTheServer = BitConverter.GetBytes()
-                        //send to the Tcp server
-                        client.Client.Send(sentToTheServer);
-                    }
-                }).Start();
+                string input = getInputFromTheUser();
+                //convert to byte array
+                byte[] sendToTheServer = Encoding.ASCII.GetBytes(input);
+                //send to the Tcp server
+                client.Client.Send(sendToTheServer);
             }
-
             //rx=true && tx=true
+            if (Server.rx && tx)
+            {
+                string msgToServer = Server.malfunctionMsg();
+                byte[] sendToServer = Encoding.ASCII.GetBytes(msgToServer);
+                client.Client.Send(sendToServer);
+            }
         }
 
         private string getInputFromTheUser()

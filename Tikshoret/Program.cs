@@ -29,6 +29,8 @@ namespace Tikshoret
             Console.ReadKey();
         }
 
+
+
         private static void openServer(UdpClient uc)
         {
             Server s = new Server(uc);
