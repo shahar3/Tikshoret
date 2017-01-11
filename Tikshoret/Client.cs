@@ -50,7 +50,7 @@ namespace Tikshoret
                     {
                         ourIp = false;
                         portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
-                        Console.WriteLine(portToConnectTcp);
+                        Console.WriteLine("Msg receieved from the server " + portToConnectTcp);
                     }
                 }
             }).Start();
@@ -86,10 +86,29 @@ namespace Tikshoret
         {
             //change the status
             tx = true;
-            //connect to the TCP
-
             //seperate the string with the details to ip and port
+            //get the number
+            byte[] rndNum = new byte[4];
+            rndNum[0] = received[16];
+            rndNum[1] = received[17];
+            rndNum[2] = received[18];
+            rndNum[3] = received[19];
+            //get the ip
+            byte[] ip = new byte[4];
+            ip[0] = received[20];
+            ip[1] = received[21];
+            ip[2] = received[22];
+            ip[3] = received[23];
+            IPAddress ipAddress = new IPAddress(ip);
+            //get the port
+            ip = new byte[2];
+            ip[0] = received[24];
+            ip[1] = received[25];
+            string portS = System.Text.Encoding.UTF8.GetString(ip);
+            int port = Int32.Parse(portS);
+            //connect to the TCP
             client = new TcpClient();
+            client.Connect(ipAddress, port);
             try
             {
                 // client.Connect()

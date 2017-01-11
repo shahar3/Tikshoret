@@ -26,7 +26,7 @@ namespace Tikshoret
         {
             udpServer = uc;
             buildIpArray();
-            buildTcpServer();
+            //buildTcpServer();
             buildUdpServer();
         }
 
@@ -42,11 +42,12 @@ namespace Tikshoret
             int startPort = 6001, stopPort = 7000;
             availablePort = findAvailablePort(startPort, stopPort);
             //open tcp
-            TcpListener listener = new TcpListener(IPAddress.Any,availablePort);
+            TcpListener listener = new TcpListener(IPAddress.Any, availablePort);
             listener.Start();
+            //thread
             Socket s = listener.AcceptSocket();
             EndPoint ep = s.RemoteEndPoint;
-            Console.WriteLine("Connected to port {0} ip {1} compName {2}",s.RemoteEndPoint);
+            Console.WriteLine("Connected to {0}", s.RemoteEndPoint);
             //wait for a message
         }
 
