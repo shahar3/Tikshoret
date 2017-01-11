@@ -11,6 +11,8 @@ namespace Tikshoret
 {
     class Program
     {
+        public static Mutex m = new Mutex();
+
         static void Main(string[] args)
         {
             UdpListener ul = new UdpListener(5999);
@@ -25,12 +27,16 @@ namespace Tikshoret
             });
             Thread t3 = new Thread(() =>
             {
-                Console.WriteLine("tx: {0} \trx: {1}", Client.tx, Server.rx);
-                Thread.Sleep(3000);
+                while (true)
+                {
+                    Console.WriteLine("tx: {0} \trx: {1}", Client.tx, Server.rx);
+                    Thread.Sleep(4000);
+                }
             });
             t2.Start();
             Thread.Sleep(20);
             t.Start();
+            t3.Start();
 
             Console.ReadKey();
         }

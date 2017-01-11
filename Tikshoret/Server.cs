@@ -15,7 +15,7 @@ namespace Tikshoret
         #region fields
         UdpClient udpServer;
         static Socket s;
-        static byte[] tcpData;
+        static byte[] tcpData = new byte[1024];
         IPAddress[] ipArr;
         IPEndPoint groupEP;
         Int16 availablePort = 0;
@@ -91,10 +91,9 @@ namespace Tikshoret
                 while (!rx)
                 {
                     data = udpServer.Receive(ref groupEP);
-
                     if (!ipArr.Contains(groupEP.Address) && data.Length == 20)
                     {
-
+                        Program.m.WaitOne();
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
                         Console.WriteLine("server recieved {0} length {1}", msgRcvd, data.Length);
                         //take the number that the client sent in request message
@@ -121,6 +120,7 @@ namespace Tikshoret
                         udpServer.Client.SendTo(msg, groupEP);
                         Console.WriteLine("send offer");
                         rx = true;
+                        Program.m.ReleaseMutex();
                     }
                 }
             }
@@ -131,10 +131,6 @@ namespace Tikshoret
             }
         }
 
-        private bool checkIfTcpAvail()
-        {
-            return false;
-        }
 
         /// <summary>
         /// get the msg tcp data and change it

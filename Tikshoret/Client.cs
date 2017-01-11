@@ -22,6 +22,7 @@ namespace Tikshoret
         TcpClient client;
         string requestMessage;
         byte[] offer = null;
+        public static Mutex m;
         #endregion
 
 
@@ -46,9 +47,10 @@ namespace Tikshoret
                 while (!tx && !Server.rx)
                 {
                     received = udpReciever.Receive(ref recieveEP);
-                    if (!ipArr.Contains(recieveEP.Address))
+                    if (!ipArr.Contains(recieveEP.Address) && !Server.rx)
                     {
-                        if (received.Length == 26)
+                        Program.m.WaitOne();
+                        if (received.Length == 26 && !Server.rx)
                         {
                             //change the status
                             tx = true;
@@ -56,6 +58,7 @@ namespace Tikshoret
                             portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
                             Console.WriteLine("Offer msg receieved from the server " + portToConnectTcp);
                         }
+                        Program.m.ReleaseMutex();
                     }
                 }
             }).Start();
@@ -69,7 +72,10 @@ namespace Tikshoret
                 Thread.Sleep(800);
             }
             //now we have the connect details to tcp
-            connectToTcp();
+            if (tx)
+            {
+                connectToTcp();
+            }
         }
 
         private void createRequestMsg()
