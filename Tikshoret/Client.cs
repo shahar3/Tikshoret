@@ -16,12 +16,11 @@ namespace Tikshoret
         UdpClient udpSender;
         UdpClient udpReciever;
         IPAddress[] ipArr;
-        bool tx = false;
+        public static bool tx = false;
         byte[] byteToSend;
         string portToConnectTcp;
         TcpClient client;
         string requestMessage;
-        bool ourIp = true;
         byte[] offer = null;
         #endregion
 
@@ -44,33 +43,34 @@ namespace Tikshoret
             ipArr = ipEntry.AddressList;
             new Thread(() =>
             {
-                while (ourIp)
+                while (!tx)
                 {
                     received = udpReciever.Receive(ref recieveEP);
                     if (!ipArr.Contains(recieveEP.Address))
                     {
-                        ourIp = false;
                         if (received.Length == 26)
                         {
+                            //change the status
+                            tx = true;
                             offer = received;
                             portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
-                            Console.WriteLine("Msg receieved from the server " + portToConnectTcp);
+                            Console.WriteLine("Offer msg receieved from the server " + portToConnectTcp);
                         }
                     }
                 }
             }).Start();
             //create the request msg
             createRequestMsg();
-            while (ourIp)
+            while (!tx)
             {
                 //send the message to the server
                 udpSender.Send(byteToSend, byteToSend.Length);
-                Thread.Sleep(1000);
+                Console.WriteLine("The client send the requst message");
+                Thread.Sleep(800);
             }
             while (offer == null) ;
             //now we have the connect details to tcp
             connectToTcp();
-            Console.WriteLine("Finished");
         }
 
         private void createRequestMsg()
@@ -90,8 +90,6 @@ namespace Tikshoret
 
         private void connectToTcp()
         {
-            //change the status
-            tx = true;
             //seperate the string with the details to ip and port
             //get the number
             byte[] rndNum = new byte[4];
@@ -113,9 +111,38 @@ namespace Tikshoret
             int port = BitConverter.ToInt16(portA, 0);
             //connect to the TCP
             client = new TcpClient();
-            Console.WriteLine("finish");
             client.Connect(ipAddress, port);
+            Console.WriteLine("The client connected to the Tcp");
+            //
+            checkTheStatus();
+        }
 
+        private void checkTheStatus()
+        {
+            //rx=false && tx=true
+            if (!Server.rx && tx)
+            {
+                new Thread(() =>
+                {
+                    //rx-off tx-on
+                    if (!Server.rx && tx)
+                    {
+                        string input = getInputFromTheUser();
+                        //convert to byte array
+                        byte[] sentToTheServer = BitConverter.GetBytes()
+                        //send to the Tcp server
+                        client.Client.Send(sentToTheServer);
+                    }
+                }).Start();
+            }
+
+            //rx=true && tx=true
+        }
+
+        private string getInputFromTheUser()
+        {
+            Console.WriteLine("please enter input: ");
+            return Console.ReadLine();
         }
     }
 }

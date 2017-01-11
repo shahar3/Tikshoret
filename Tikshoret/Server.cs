@@ -18,7 +18,7 @@ namespace Tikshoret
         IPEndPoint groupEP;
         Int16 availablePort = 0;
         byte[] data = new byte[1024];
-        bool rx = false;
+        public static bool rx = false;
         string hostName;
         string progName = "Networking17YHSC";
         bool sent = false;
@@ -49,11 +49,19 @@ namespace Tikshoret
             new Thread(() =>
             {
                 Socket s = listener.AcceptSocket();
+                //change the status
+                rx = true;
                 EndPoint ep = s.RemoteEndPoint;
-                Console.WriteLine("Connected to {0}", s.RemoteEndPoint);
+                Console.WriteLine("the server Connected to {0}", s.RemoteEndPoint);
             }).Start();
+
+           
+
+
             //wait for a message
         }
+
+      
 
         private static Int16 findAvailablePort(int startPort, int stopPort)
         {
@@ -74,10 +82,11 @@ namespace Tikshoret
                 while (!sent)
                 {
                     data = udpServer.Receive(ref groupEP);
-                    if (!ipArr.Contains(groupEP.Address))
+
+                    if (!ipArr.Contains(groupEP.Address) && data.Length == 20)
                     {
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
-                        Console.WriteLine("server recieved {0} length {1}", msgRcvd,data.Length);
+                        Console.WriteLine("server recieved {0} length {1}", msgRcvd, data.Length);
                         //take the number that the client sent in request message
                         byte[] rndNum = new byte[4];
                         rndNum[0] = data[16];
@@ -104,7 +113,7 @@ namespace Tikshoret
                         sent = true;
                     }
                 }
-        }
+            }
             catch (Exception e)
             {
                 Console.WriteLine("Catch");
