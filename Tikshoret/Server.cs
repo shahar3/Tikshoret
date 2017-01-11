@@ -16,7 +16,7 @@ namespace Tikshoret
         TcpClient tcpServer;
         IPAddress[] ipArr;
         IPEndPoint groupEP;
-        int availablePort = 0;
+        Int16 availablePort = 0;
         byte[] data = new byte[1024];
         bool rx = false;
         string hostName;
@@ -54,14 +54,14 @@ namespace Tikshoret
             //wait for a message
         }
 
-        private static int findAvailablePort(int startPort, int stopPort)
+        private static Int16 findAvailablePort(int startPort, int stopPort)
         {
             IPGlobalProperties ipgp = IPGlobalProperties.GetIPGlobalProperties();
             TcpConnectionInformation[] tcpConInfoArr = ipgp.GetActiveTcpConnections();
             Random r = new Random();
             var busyPorts = tcpConInfoArr.Select(t => t.LocalEndPoint.Port).Where(v => v >= startPort && v <= stopPort).ToArray();
             var firstAvailableRandomPort = Enumerable.Range(startPort, stopPort - startPort).OrderBy(v => r.Next()).FirstOrDefault(p => !busyPorts.Contains(p));
-            return firstAvailableRandomPort;
+            return (Int16)firstAvailableRandomPort;
         }
 
         private void buildUdpServer()
@@ -91,7 +91,7 @@ namespace Tikshoret
                         msgList.AddRange(rndNum);
                         IPAddress ip = ipArr[3];
                         byte[] ipByteArr = ip.GetAddressBytes();
-                        byte[] portByteArr = System.Text.Encoding.UTF8.GetBytes(availablePort.ToString());
+                        byte[] portByteArr = BitConverter.GetBytes(availablePort);
                         msgList.AddRange(ipByteArr);
                         msgList.AddRange(portByteArr);
                         msg = msgList.ToArray();
