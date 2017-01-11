@@ -28,13 +28,12 @@ namespace Tikshoret
                 while (true)
                 {
                     Console.WriteLine("tx: {0} \trx: {1}", Client.tx, Server.rx);
-                    Thread.Sleep(4000);
+                    Thread.Sleep(10000);
                 }
             });
             t2.Start();
             t.Start();
             t3.Start();
-
             Console.ReadKey();
         }
 

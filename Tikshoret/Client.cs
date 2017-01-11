@@ -125,6 +125,7 @@ namespace Tikshoret
             Console.WriteLine("The client connected to the Tcp");
             //
             checkTheStatus();
+            while (true) ;
         }
 
         private void checkTheStatus()

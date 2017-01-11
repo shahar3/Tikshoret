@@ -50,26 +50,28 @@ namespace Tikshoret
             //thread
             new Thread(() =>
             {
-                s = listener.AcceptSocket();
-                rx = true;
-                s.Receive(tcpData);
-                //rx=true && tx=false
-                if (!Client.tx)
+                while (!Server.rx)
                 {
-                    //print the message to the screen
-                    string msgToScreen = System.Text.Encoding.UTF8.GetString(tcpData);
-                    Console.WriteLine(msgToScreen);
+                    Console.WriteLine("--------------------------------------------------------");
+                    s = listener.AcceptSocket();
+                    Console.WriteLine("connected");
+                    rx = true;
+                    s.Receive(tcpData);
+                    //rx=true && tx=false
+                    if (!Client.tx)
+                    {
+                        //print the message to the screen
+                        string msgToScreen = System.Text.Encoding.UTF8.GetString(tcpData);
+                        Console.WriteLine(msgToScreen);
+                    }
+                    Console.WriteLine();
+                    //change the status
+                    EndPoint ep = s.RemoteEndPoint;
+                    Console.WriteLine("the server Connected to {0}", s.RemoteEndPoint);
                 }
-                Console.WriteLine();
-                //change the status
-                EndPoint ep = s.RemoteEndPoint;
-                Console.WriteLine("the server Connected to {0}", s.RemoteEndPoint);
             }).Start();
             //wait for a message
         }
-
-
-
 
 
         private static Int16 findAvailablePort(int startPort, int stopPort)
