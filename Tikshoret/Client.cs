@@ -66,10 +66,12 @@ namespace Tikshoret
             createRequestMsg();
             while (!tx && !Server.rx)
             {
+                Program.m.WaitOne();
                 //send the message to the server
                 udpSender.Send(byteToSend, byteToSend.Length);
                 Console.WriteLine("The client send the requst message");
                 Thread.Sleep(800);
+                Program.m.ReleaseMutex();
             }
             //now we have the connect details to tcp
             if (tx)
