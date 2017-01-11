@@ -26,7 +26,7 @@ namespace Tikshoret
         {
             udpServer = uc;
             buildIpArray();
-            //buildTcpServer();
+            buildTcpServer();
             buildUdpServer();
         }
 
@@ -45,9 +45,12 @@ namespace Tikshoret
             TcpListener listener = new TcpListener(IPAddress.Any, availablePort);
             listener.Start();
             //thread
-            Socket s = listener.AcceptSocket();
-            EndPoint ep = s.RemoteEndPoint;
-            Console.WriteLine("Connected to {0}", s.RemoteEndPoint);
+            new Thread(() =>
+            {
+                Socket s = listener.AcceptSocket();
+                EndPoint ep = s.RemoteEndPoint;
+                Console.WriteLine("Connected to {0}", s.RemoteEndPoint);
+            }).Start();
             //wait for a message
         }
 
@@ -75,7 +78,6 @@ namespace Tikshoret
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
                         Console.WriteLine("recieved {0}", msgRcvd);
                         //take the number that the client sent in request message
-                        byte[] offer = new byte[26];
                         byte[] rndNum = new byte[4];
                         rndNum[0] = data[16];
                         rndNum[1] = data[17];
@@ -86,10 +88,13 @@ namespace Tikshoret
                         string msgToSent = progName;
                         byte[] msg = System.Text.Encoding.UTF8.GetBytes(msgToSent);
                         msgList.AddRange(msg);
-                        byte[] ipByteArr = System.Text.Encoding.UTF8.GetBytes(ipArr[3].ToString());
+                        msgList.AddRange(rndNum);
+                        IPAddress ip = ipArr[3];
+                        byte[] ipByteArr = ip.GetAddressBytes();
                         byte[] portByteArr = System.Text.Encoding.UTF8.GetBytes(availablePort.ToString());
                         msgList.AddRange(ipByteArr);
                         msgList.AddRange(portByteArr);
+                        msg = msgList.ToArray();
                         IPAddress broadcast = IPAddress.Parse("192.168.1.255");
                         groupEP.Address = broadcast;
                         groupEP.Port = 6000;
