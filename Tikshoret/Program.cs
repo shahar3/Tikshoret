@@ -23,7 +23,7 @@ namespace Tikshoret
             {
                 openServer(udpReceiver);
             });
-            //t.Start();
+            t.Start();
             t2.Start();
             Console.ReadKey();
         }

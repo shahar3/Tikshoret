@@ -21,6 +21,7 @@ namespace Tikshoret
         bool rx = false;
         string hostName;
         string progName = "Networking17YHSC";
+        bool sent = false;
 
         public Server(UdpClient uc)
         {
@@ -70,13 +71,13 @@ namespace Tikshoret
             groupEP = new IPEndPoint(IPAddress.Any, 6000);
             try
             {
-                while (true)
+                while (!sent)
                 {
                     data = udpServer.Receive(ref groupEP);
                     if (!ipArr.Contains(groupEP.Address))
                     {
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
-                        Console.WriteLine("recieved {0}", msgRcvd);
+                        Console.WriteLine("server recieved {0} length {1}", msgRcvd,data.Length);
                         //take the number that the client sent in request message
                         byte[] rndNum = new byte[4];
                         rndNum[0] = data[16];
@@ -98,18 +99,16 @@ namespace Tikshoret
                         IPAddress broadcast = IPAddress.Parse("192.168.1.255");
                         groupEP.Address = broadcast;
                         groupEP.Port = 6000;
-                        udpServer.Send(msg, msg.Length, groupEP);
+                        udpServer.Client.SendTo(msg, groupEP);
+                        Console.WriteLine("send offer");
+                        sent = true;
                     }
                 }
-            }
+        }
             catch (Exception e)
             {
                 Console.WriteLine("Catch");
                 Console.WriteLine(e.Message);
-            }
-            finally
-            {
-                udpServer.Close();
             }
         }
 
