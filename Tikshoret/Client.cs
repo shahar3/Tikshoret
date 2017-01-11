@@ -41,39 +41,40 @@ namespace Tikshoret
             string hostName = Dns.GetHostName();
             IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
             ipArr = ipEntry.AddressList;
+
+
             new Thread(() =>
             {
-                while (!tx && !Server.rx)
+                while (!tx)
                 {
                     received = udpReciever.Receive(ref recieveEP);
-                    if (!ipArr.Contains(recieveEP.Address) && !Server.rx)
+                    if (!ipArr.Contains(recieveEP.Address))
                     {
-                        Program.m.WaitOne();
-                        if (received.Length == 26 && !Server.rx)
+                        if (received.Length == 26)
                         {
                             //change the status
-                            tx = true;
+                            if(!Server.rx)
+                                tx = true;
                             offer = received;
                             portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
                             Console.WriteLine("Offer msg receieved from the server " + portToConnectTcp);
                         }
-                        Program.m.ReleaseMutex();
                     }
                 }
             }).Start();
             //create the request msg
+
             createRequestMsg();
+
             while (!tx && !Server.rx)
             {
-                Program.m.WaitOne();
                 if (!tx && !Server.rx)
                 {
                     //send the message to the server
                     udpSender.Send(byteToSend, byteToSend.Length);
                     Console.WriteLine("The client send the requst message");
-                    Thread.Sleep(800);
+                    Thread.Sleep(1000);
                 }
-                Program.m.ReleaseMutex();
             }
             //now we have the connect details to tcp
             if (tx)

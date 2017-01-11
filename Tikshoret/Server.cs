@@ -93,7 +93,6 @@ namespace Tikshoret
                     data = udpServer.Receive(ref groupEP);
                     if (!ipArr.Contains(groupEP.Address) && data.Length == 20)
                     {
-                        Program.m.WaitOne();
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
                         Console.WriteLine("server recieved {0} length {1}", msgRcvd, data.Length);
                         //take the number that the client sent in request message
@@ -119,8 +118,6 @@ namespace Tikshoret
                         groupEP.Port = 5999;
                         udpServer.Client.SendTo(msg, groupEP);
                         Console.WriteLine("send offer");
-                        rx = true;
-                        Program.m.ReleaseMutex();
                     }
                 }
             }
