@@ -50,7 +50,7 @@ namespace Tikshoret
             {
                 Socket s = listener.AcceptSocket();
                 EndPoint ep = s.RemoteEndPoint;
-                Console.WriteLine("Connected to {0}", s.RemoteEndPoint);
+                Console.WriteLine("The server connected to {0}", s.RemoteEndPoint);
             }).Start();
             //wait for a message
         }
@@ -74,34 +74,24 @@ namespace Tikshoret
                 while (!sent)
                 {
                     data = udpServer.Receive(ref groupEP);
-                    if (!ipArr.Contains(groupEP.Address))
+                    if (!ipArr.Contains(groupEP.Address) && data.Length == 20)
                     {
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
-                        Console.WriteLine("server recieved {0} length {1}", msgRcvd,data.Length);
-                        //take the number that the client sent in request message
-                        byte[] rndNum = new byte[4];
-                        rndNum[0] = data[16];
-                        rndNum[1] = data[17];
-                        rndNum[2] = data[18];
-                        rndNum[3] = data[19];
-                        //create the offer message
-                        List<byte> msgList = new List<byte>();
-                        string msgToSent = progName;
-                        byte[] msg = System.Text.Encoding.UTF8.GetBytes(msgToSent);
-                        msgList.AddRange(msg);
-                        msgList.AddRange(rndNum);
-                        IPAddress ip = ipArr[3];
-                        byte[] ipByteArr = ip.GetAddressBytes();
-                        byte[] portByteArr = BitConverter.GetBytes(availablePort);
-                        msgList.AddRange(ipByteArr);
-                        msgList.AddRange(portByteArr);
-                        msg = msgList.ToArray();
+                        Console.WriteLine("server recieved {0} length {1}", msgRcvd, data.Length);
+                        byte[] msg = createOffer();
                         IPAddress broadcast = IPAddress.Parse("192.168.1.255");
                         groupEP.Address = broadcast;
                         groupEP.Port = 6000;
-                        udpServer.Client.SendTo(msg, groupEP);
+                        udpServer.Send(msg, msg.Length, groupEP);
                         Console.WriteLine("send offer");
                         sent = true;
+                    }
+                    else
+                    {
+                        if (data.Length == 20)
+                        {
+                            Console.WriteLine("Server got my request");
+                        }
                     }
                 }
         }
@@ -110,6 +100,29 @@ namespace Tikshoret
                 Console.WriteLine("Catch");
                 Console.WriteLine(e.Message);
             }
+        }
+
+        private byte[] createOffer()
+        {
+            //take the number that the client sent in request message
+            byte[] rndNum = new byte[4];
+            rndNum[0] = data[16];
+            rndNum[1] = data[17];
+            rndNum[2] = data[18];
+            rndNum[3] = data[19];
+            //create the offer message
+            List<byte> msgList = new List<byte>();
+            string msgToSent = progName;
+            byte[] msg = System.Text.Encoding.UTF8.GetBytes(msgToSent);
+            msgList.AddRange(msg);
+            msgList.AddRange(rndNum);
+            IPAddress ip = ipArr[3];
+            byte[] ipByteArr = ip.GetAddressBytes();
+            byte[] portByteArr = BitConverter.GetBytes(availablePort);
+            msgList.AddRange(ipByteArr);
+            msgList.AddRange(portByteArr);
+            msg = msgList.ToArray();
+            return msg;
         }
 
         private bool checkIfTcpAvail()

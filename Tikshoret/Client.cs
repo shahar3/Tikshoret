@@ -49,12 +49,12 @@ namespace Tikshoret
                     received = udpReciever.Receive(ref recieveEP);
                     if (!ipArr.Contains(recieveEP.Address))
                     {
-                        ourIp = false;
                         if (received.Length == 26)
                         {
+                            ourIp = false;
                             offer = received;
                             portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
-                            Console.WriteLine("Msg receieved from the server " + portToConnectTcp);
+                            Console.WriteLine("offer msg (client): " + portToConnectTcp);
                         }
                     }
                 }
@@ -70,7 +70,6 @@ namespace Tikshoret
             while (offer == null) ;
             //now we have the connect details to tcp
             connectToTcp();
-            Console.WriteLine("Finished");
         }
 
         private void createRequestMsg()
@@ -113,8 +112,8 @@ namespace Tikshoret
             int port = BitConverter.ToInt16(portA, 0);
             //connect to the TCP
             client = new TcpClient();
-            Console.WriteLine("finish");
             client.Connect(ipAddress, port);
+            Console.WriteLine("the client connected to tcp");
 
         }
     }
