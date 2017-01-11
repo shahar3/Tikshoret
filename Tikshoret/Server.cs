@@ -85,7 +85,7 @@ namespace Tikshoret
         private void buildUdpServer()
         {
             Console.WriteLine("Created server");
-            groupEP = new IPEndPoint(IPAddress.Any, 6000);
+            groupEP = new IPEndPoint(IPAddress.Any, 5999);
             try
             {
                 while (!rx)
@@ -117,7 +117,7 @@ namespace Tikshoret
                         msg = msgList.ToArray();
                         IPAddress broadcast = IPAddress.Parse("192.168.1.255");
                         groupEP.Address = broadcast;
-                        groupEP.Port = 6000;
+                        groupEP.Port = 5999;
                         udpServer.Client.SendTo(msg, groupEP);
                         Console.WriteLine("send offer");
                         rx = true;

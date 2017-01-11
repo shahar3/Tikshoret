@@ -33,8 +33,8 @@ namespace Tikshoret
             IPHostEntry compIp = Dns.GetHostEntry(compName);
             Console.WriteLine("Comp name: {0}", compName);
             IPAddress broadcast = IPAddress.Parse("192.168.1.255");
-            IPEndPoint ep = new IPEndPoint(broadcast, 6000);
-            IPEndPoint recieveEP = new IPEndPoint(IPAddress.Any, 6000);
+            IPEndPoint ep = new IPEndPoint(broadcast, 5999);
+            IPEndPoint recieveEP = new IPEndPoint(IPAddress.Any, 5999);
             Console.WriteLine("created client");
             udpSender.Connect(ep);
             //
