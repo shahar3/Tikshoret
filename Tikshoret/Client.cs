@@ -38,7 +38,6 @@ namespace Tikshoret
             IPEndPoint recieveEP = new IPEndPoint(IPAddress.Any, 5999);
             Console.WriteLine("created client");
             udpSender.Connect(ep);
-            //
             string hostName = Dns.GetHostName();
             IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
             ipArr = ipEntry.AddressList;
@@ -67,10 +66,13 @@ namespace Tikshoret
             while (!tx && !Server.rx)
             {
                 Program.m.WaitOne();
-                //send the message to the server
-                udpSender.Send(byteToSend, byteToSend.Length);
-                Console.WriteLine("The client send the requst message");
-                Thread.Sleep(800);
+                if (!tx && !Server.rx)
+                {
+                    //send the message to the server
+                    udpSender.Send(byteToSend, byteToSend.Length);
+                    Console.WriteLine("The client send the requst message");
+                    Thread.Sleep(800);
+                }
                 Program.m.ReleaseMutex();
             }
             //now we have the connect details to tcp
