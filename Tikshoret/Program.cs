@@ -11,9 +11,11 @@ namespace Tikshoret
 {
     class Program
     {
+        public static Mutex m = new Mutex();
+
         static void Main(string[] args)
         {
-            UdpListener ul = new UdpListener(5999);
+            UdpListener ul = new UdpListener(6000);
             UdpClient udpReceiver = ul.getUdpListener();
             Thread t = new Thread(() =>
             {

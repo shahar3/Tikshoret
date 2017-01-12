@@ -23,7 +23,7 @@ namespace Tikshoret
         public static bool rx = false;
         public static bool tcpRecv = false;
         string hostName;
-        string progName = "Networking17YHSC";
+        string progName = "Networking17YYYY";
         #endregion
 
         public Server(UdpClient uc)
@@ -51,6 +51,7 @@ namespace Tikshoret
             //thread
             new Thread(() =>
             {
+                Program.m.WaitOne();
                 Console.WriteLine("--------------------------------------------------------");
                 s = listener.AcceptSocket();
                 Console.WriteLine("{0} connected", s.RemoteEndPoint);
@@ -65,6 +66,7 @@ namespace Tikshoret
                 //change the status
                 EndPoint ep = s.RemoteEndPoint;
                 Console.WriteLine("the server Connected to {0}", s.RemoteEndPoint);
+                Program.m.ReleaseMutex();
             }).Start();
             //wait for a message
         }
@@ -83,12 +85,14 @@ namespace Tikshoret
         private void buildUdpServer()
         {
             Console.WriteLine("Created server");
-            groupEP = new IPEndPoint(IPAddress.Any, 5999);
+            groupEP = new IPEndPoint(IPAddress.Any, 6000);
             try
             {
                 while (!rx)
                 {
+
                     data = udpServer.Receive(ref groupEP);
+                    Program.m.WaitOne();
                     if (!ipArr.Contains(groupEP.Address) && data.Length == 20)
                     {
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
@@ -113,10 +117,11 @@ namespace Tikshoret
                         msg = msgList.ToArray();
                         IPAddress broadcast = IPAddress.Parse("192.168.1.255");
                         groupEP.Address = broadcast;
-                        groupEP.Port = 5999;
+                        groupEP.Port = 6000;
                         udpServer.Send(msg, msg.Length, groupEP);
                         Console.WriteLine("send offer");
                     }
+                    Program.m.ReleaseMutex();
                 }
             }
             catch (Exception e)
@@ -151,10 +156,10 @@ namespace Tikshoret
         /// </summary>
         public static string malfunctionMsg()
         {
-            Random r = new Random();
-            int charIndex = r.Next(tcpData.Length);
-            char rndChar = (char)r.Next(32, 127);
             string tcpdataString = System.Text.Encoding.UTF8.GetString(tcpData);
+            Random r = new Random();
+            int charIndex = r.Next(tcpdataString.Trim('\0').Length);
+            char rndChar = (char)r.Next(32, 127);
             char[] charStr = tcpdataString.ToCharArray();
             charStr[charIndex] = rndChar;
             string newString = new string(charStr);

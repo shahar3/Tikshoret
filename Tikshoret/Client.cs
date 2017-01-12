@@ -19,7 +19,7 @@ namespace Tikshoret
         public static bool tx = false;
         byte[] byteToSend;
         string portToConnectTcp;
-        TcpClient client;
+        public static TcpClient client;
         string requestMessage;
         byte[] offer = null;
         public static Mutex m;
@@ -34,8 +34,8 @@ namespace Tikshoret
             IPHostEntry compIp = Dns.GetHostEntry(compName);
             Console.WriteLine("Comp name: {0}", compName);
             IPAddress broadcast = IPAddress.Parse("192.168.1.255");
-            IPEndPoint ep = new IPEndPoint(broadcast, 5999);
-            IPEndPoint recieveEP = new IPEndPoint(IPAddress.Any, 5999);
+            IPEndPoint ep = new IPEndPoint(broadcast, 6000);
+            IPEndPoint recieveEP = new IPEndPoint(IPAddress.Any, 6000);
             Console.WriteLine("created client");
             udpSender.Connect(ep);
             string hostName = Dns.GetHostName();
@@ -50,6 +50,7 @@ namespace Tikshoret
                     received = udpReciever.Receive(ref recieveEP);
                     if (!ipArr.Contains(recieveEP.Address))
                     {
+                        Program.m.WaitOne();
                         if (received.Length == 26)
                         {
                             //change the status
@@ -59,25 +60,27 @@ namespace Tikshoret
                             portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
                             Console.WriteLine("Offer msg receieved from the server " + portToConnectTcp);
                         }
+                        Program.m.ReleaseMutex();
                     }
                 }
             }).Start();
             //create the request msg
-
             createRequestMsg();
 
             while (!tx && !Server.rx)
             {
                 if (!tx && !Server.rx)
                 {
+                    Program.m.WaitOne();
                     //send the message to the server
                     udpSender.Send(byteToSend, byteToSend.Length);
                     Console.WriteLine("The client send the requst message");
                     Thread.Sleep(1000);
+                    Program.m.ReleaseMutex();
                 }
             }
             //now we have the connect details to tcp
-            if (tx)
+            if (tx && !Server.rx)
             {
                 connectToTcp();
             }
@@ -90,7 +93,7 @@ namespace Tikshoret
             int randomNumtoSend = rnd.Next();
             byte[] rndNumByte = BitConverter.GetBytes(randomNumtoSend);
             List<byte> byteToSendList = new List<byte>();
-            requestMessage = "Networking17YHSC";
+            requestMessage = "Networking17YYYY";
             //convert the message to bytes array
             byteToSend = System.Text.Encoding.UTF8.GetBytes(requestMessage);
             byteToSendList.AddRange(byteToSend);
@@ -121,7 +124,7 @@ namespace Tikshoret
             int port = BitConverter.ToInt16(portA, 0);
             //connect to the TCP
             client = new TcpClient();
-            client.Connect(ipAddress, port);
+            client.ConnectAsync(ipAddress, port);
             Console.WriteLine("The client connected to the Tcp");
 
             checkTheStatus();
