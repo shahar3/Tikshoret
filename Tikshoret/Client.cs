@@ -137,13 +137,17 @@ namespace Tikshoret
                 t.Start();
             }
             //rx=true && tx=true
-            if (Server.rx && tx)
+            while (true)
             {
-                if (t.IsAlive)
+                if (Server.rx && tx)
+                {
                     t.Abort();
-                string msgToServer = Server.malfunctionMsg();
-                byte[] sendToServer = Encoding.ASCII.GetBytes(msgToServer);
-                client.Client.Send(sendToServer);
+                    while (!Server.tcpRecv) ;
+                    string msgToServer = Server.malfunctionMsg();
+                    byte[] sendToServer = Encoding.ASCII.GetBytes(msgToServer);
+                    client.Client.Send(sendToServer);
+                    break;
+                }
             }
         }
 

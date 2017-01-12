@@ -21,6 +21,7 @@ namespace Tikshoret
         Int16 availablePort = 0;
         byte[] data = new byte[1024];
         public static bool rx = false;
+        public static bool tcpRecv = false;
         string hostName;
         string progName = "Networking17YHSC";
         #endregion
@@ -50,25 +51,20 @@ namespace Tikshoret
             //thread
             new Thread(() =>
             {
-                while (!Server.rx)
-                {
-                    Console.WriteLine("--------------------------------------------------------");
-                    s = listener.AcceptSocket();
-                    Console.WriteLine("connected");
-                    rx = true;
-                    s.Receive(tcpData);
-                    //rx=true && tx=false
-                    if (!Client.tx)
-                    {
-                        //print the message to the screen
-                        string msgToScreen = System.Text.Encoding.UTF8.GetString(tcpData);
-                        Console.WriteLine(msgToScreen);
-                    }
-                    Console.WriteLine();
-                    //change the status
-                    EndPoint ep = s.RemoteEndPoint;
-                    Console.WriteLine("the server Connected to {0}", s.RemoteEndPoint);
-                }
+                Console.WriteLine("--------------------------------------------------------");
+                s = listener.AcceptSocket();
+                Console.WriteLine("{0} connected", s.RemoteEndPoint);
+                rx = true;
+                s.Receive(tcpData);
+                tcpRecv = true;
+                //rx=true && tx=false
+                //print the message to the screen
+                string msgToScreen = System.Text.Encoding.UTF8.GetString(tcpData);
+                Console.WriteLine(msgToScreen);
+                Console.WriteLine();
+                //change the status
+                EndPoint ep = s.RemoteEndPoint;
+                Console.WriteLine("the server Connected to {0}", s.RemoteEndPoint);
             }).Start();
             //wait for a message
         }
