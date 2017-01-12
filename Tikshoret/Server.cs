@@ -109,7 +109,7 @@ namespace Tikshoret
                         byte[] msg = System.Text.Encoding.UTF8.GetBytes(msgToSent);
                         msgList.AddRange(msg);
                         msgList.AddRange(rndNum);
-                        IPAddress ip = ipArr[3];
+                        IPAddress ip = IPAddress.Parse(findipv4(NetworkInterfaceType.Wireless80211));
                         byte[] ipByteArr = ip.GetAddressBytes();
                         byte[] portByteArr = BitConverter.GetBytes(availablePort);
                         msgList.AddRange(ipByteArr);
@@ -118,7 +118,7 @@ namespace Tikshoret
                         IPAddress broadcast = IPAddress.Parse("192.168.1.255");
                         groupEP.Address = broadcast;
                         groupEP.Port = 5999;
-                        udpServer.Client.SendTo(msg, groupEP);
+                        udpServer.Send(msg, msg.Length, groupEP);
                         Console.WriteLine("send offer");
                     }
                 }
@@ -128,6 +128,25 @@ namespace Tikshoret
                 Console.WriteLine("Catch");
                 Console.WriteLine(e.Message);
             }
+        }
+
+        private string findipv4(NetworkInterfaceType _type)
+        {
+            string output = "";
+            foreach (NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (item.NetworkInterfaceType == _type && item.OperationalStatus == OperationalStatus.Up)
+                {
+                    foreach (UnicastIPAddressInformation ip in item.GetIPProperties().UnicastAddresses)
+                    {
+                        if (ip.Address.AddressFamily == AddressFamily.InterNetwork)
+                        {
+                            output = ip.Address.ToString();
+                        }
+                    }
+                }
+            }
+            return output;
         }
 
 

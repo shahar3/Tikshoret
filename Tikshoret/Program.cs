@@ -34,6 +34,10 @@ namespace Tikshoret
             t2.Start();
             t.Start();
             t3.Start();
+            while (!Server.rx)
+            {
+
+            }
             Console.ReadKey();
         }
 
