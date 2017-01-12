@@ -53,7 +53,7 @@ namespace Tikshoret
                         if (received.Length == 26)
                         {
                             //change the status
-                            if(!Server.rx)
+                            if (!Server.rx)
                                 tx = true;
                             offer = received;
                             portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
@@ -123,7 +123,7 @@ namespace Tikshoret
             client = new TcpClient();
             client.Connect(ipAddress, port);
             Console.WriteLine("The client connected to the Tcp");
-            //
+
             checkTheStatus();
             while (true) ;
         }
@@ -131,21 +131,29 @@ namespace Tikshoret
         private void checkTheStatus()
         {
             //rx=false && tx=true
+            Thread t = new Thread(rx_off_tx_on);
             if (!Server.rx && tx)
             {
-                string input = getInputFromTheUser();
-                //convert to byte array
-                byte[] sendToTheServer = Encoding.ASCII.GetBytes(input);
-                //send to the Tcp server
-                client.Client.Send(sendToTheServer);
+                t.Start();
             }
             //rx=true && tx=true
             if (Server.rx && tx)
             {
+                if (t.IsAlive)
+                    t.Abort();
                 string msgToServer = Server.malfunctionMsg();
                 byte[] sendToServer = Encoding.ASCII.GetBytes(msgToServer);
                 client.Client.Send(sendToServer);
             }
+        }
+
+        private void rx_off_tx_on()
+        {
+            string input = getInputFromTheUser();
+            //convert to byte array
+            byte[] sendToTheServer = Encoding.ASCII.GetBytes(input);
+            //send to the Tcp server
+            client.Client.Send(sendToTheServer);
         }
 
         private string getInputFromTheUser()
