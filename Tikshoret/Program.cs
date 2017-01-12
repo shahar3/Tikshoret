@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Tikshoret
 {
+    /// <summary>
+    /// This class run the the threads that execute the server and the client
+    /// </summary>
     class Program
     {
 
@@ -17,10 +20,12 @@ namespace Tikshoret
             introduction();
             UdpListener ul = new UdpListener(6000);
             UdpClient udpReceiver = ul.getUdpListener();
+            //open client
             Thread t = new Thread(() =>
             {
                 openClient(udpReceiver);
             });
+            //open server
             Thread t2 = new Thread(() =>
             {
                 openServer(udpReceiver);
@@ -43,6 +48,9 @@ namespace Tikshoret
             Console.ReadKey();
         }
 
+        /// <summary>
+        /// this function print to the screen the intrudction of the program
+        /// </summary>
         private static void introduction()
         {
             Console.WriteLine("****************************************************");
@@ -50,11 +58,18 @@ namespace Tikshoret
             Console.WriteLine("****************************************************");
         }
 
+        /// <summary>
+        /// this function build the server side 
+        /// </summary>
+        /// <param name="uc"></param>
         private static void openServer(UdpClient uc)
         {
             Server s = new Server(uc);
         }
-
+        /// <summary>
+        /// this function build the client side
+        /// </summary>
+        /// <param name="uc"></param>
         private static void openClient(UdpClient uc)
         {
             Client c = new Client(uc);

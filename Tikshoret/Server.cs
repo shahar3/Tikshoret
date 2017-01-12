@@ -10,8 +10,12 @@ using System.Threading.Tasks;
 
 namespace Tikshoret
 {
+    /// <summary>
+    /// this class represents the server side
+    /// </summary>
     class Server
     {
+
         #region fields
         UdpClient udpServer;
         static Socket s;
@@ -26,6 +30,10 @@ namespace Tikshoret
         string progName = "Networking17YYYY";
         #endregion
 
+        /// <summary>
+        /// this constructor receive udp client object from the main
+        /// </summary>
+        /// <param name="uc"></param>
         public Server(UdpClient uc)
         {
             udpServer = uc;
@@ -34,6 +42,9 @@ namespace Tikshoret
             buildUdpServer();
         }
 
+        /// <summary>
+        /// get the details of the computer
+        /// </summary>
         private void buildIpArray()
         {
             hostName = Dns.GetHostName();
@@ -41,6 +52,9 @@ namespace Tikshoret
             ipArr = ipEntry.AddressList;
         }
 
+        /// <summary>
+        /// this function create listen on tcp
+        /// </summary>
         private void buildTcpServer()
         {
             int startPort = 6001, stopPort = 7000;
@@ -64,10 +78,14 @@ namespace Tikshoret
                 //change the status
                 EndPoint ep = s.RemoteEndPoint;
             }).Start();
-            //wait for a message
         }
 
-
+        /// <summary>
+        /// This function find available port between 6000-7000 
+        /// </summary>
+        /// <param name="startPort"></param>
+        /// <param name="stopPort"></param>
+        /// <returns></returns>
         private static Int16 findAvailablePort(int startPort, int stopPort)
         {
             IPGlobalProperties ipgp = IPGlobalProperties.GetIPGlobalProperties();
@@ -78,6 +96,11 @@ namespace Tikshoret
             return (Int16)firstAvailableRandomPort;
         }
 
+        /// <summary>
+        /// This function create a listen on udp with port 6000 
+        /// waiting for request message and return offer message that
+        /// contain details about the tcp connection 
+        /// </summary>
         private void buildUdpServer()
         {
             Console.WriteLine("Created server");
@@ -91,7 +114,7 @@ namespace Tikshoret
                     if (!ipArr.Contains(groupEP.Address) && data.Length == 20)
                     {
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
-                        Console.WriteLine("Offer received");
+                        Console.WriteLine("Request message received");
                         //take the number that the client sent in request message
                         byte[] rndNum = new byte[4];
                         rndNum[0] = data[16];
@@ -104,7 +127,7 @@ namespace Tikshoret
                         byte[] msg = System.Text.Encoding.UTF8.GetBytes(msgToSent);
                         msgList.AddRange(msg);
                         msgList.AddRange(rndNum);
-                        IPAddress ip = IPAddress.Parse(findipv4(NetworkInterfaceType.Wireless80211));
+                        IPAddress ip = IPAddress.Parse(getIp(NetworkInterfaceType.Wireless80211));
                         byte[] ipByteArr = ip.GetAddressBytes();
                         byte[] portByteArr = BitConverter.GetBytes(availablePort);
                         msgList.AddRange(ipByteArr);
@@ -114,7 +137,7 @@ namespace Tikshoret
                         groupEP.Address = broadcast;
                         groupEP.Port = 6000;
                         udpServer.Send(msg, msg.Length, groupEP);
-                        Console.WriteLine("send offer");
+                        Console.WriteLine("sent offer request- port {0} ip {1}", availablePort, ip.ToString());
                     }
                 }
             }
@@ -125,7 +148,12 @@ namespace Tikshoret
             }
         }
 
-        private string findipv4(NetworkInterfaceType _type)
+        /// <summary>
+        /// Get the V4 ip from array of all ip's of the computer
+        /// </summary>
+        /// <param name="_type"></param>
+        /// <returns></returns>
+        private string getIp(NetworkInterfaceType _type)
         {
             string output = "";
             foreach (NetworkInterface item in NetworkInterface.GetAllNetworkInterfaces())

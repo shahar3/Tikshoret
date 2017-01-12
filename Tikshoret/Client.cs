@@ -9,8 +9,12 @@ using System.Threading.Tasks;
 
 namespace Tikshoret
 {
+    /// <summary>
+    /// this class represents the client side
+    /// </summary>
     class Client
     {
+
         #region fields
         byte[] received = null;
         UdpClient udpSender;
@@ -27,7 +31,12 @@ namespace Tikshoret
         const string networkName = "Networking17YHSC";
         #endregion
 
-
+        /// <summary>
+        /// this constructor receive udp client object from the main
+        /// get the details about this computer.
+        /// configure the udp broadcast
+        /// </summary>
+        /// <param name="uc"></param>
         public Client(UdpClient uc)
         {
             udpSender = new UdpClient();
@@ -41,8 +50,43 @@ namespace Tikshoret
             udpSender.Connect(ep);
             IPHostEntry ipEntry = Dns.GetHostEntry(compName);
             ipArr = ipEntry.AddressList;
+            //receive offer message from the server
+            receiveOfferMessage(recieveEP);
+            //create the request msg
+            createRequestMsg();
+            //send request message to the servers
+            //this function work until we get offer message from some server
+            sendRequestMessage();
+            //now we have the connect details to tcp
+            if (tx && !Server.rx)
+            {
+                connectToTcp();
+            }
+        }
 
+        /// <summary>
+        /// This function send request message to the servers on broadcast each second
+        /// </summary>
+        private void sendRequestMessage()
+        {
+            while (!tx && !Server.rx && TIMEOUT > 0)
+            {
+                if (!tx && !Server.rx)
+                {
+                    //send the message to the server
+                    udpSender.Send(byteToSend, byteToSend.Length);
+                    Thread.Sleep(1000);
+                    TIMEOUT--;
+                }
+            }
+        }
 
+        /// <summary>
+        /// This function waiting for offer message from some server
+        /// </summary>
+        /// <param name="recieveEP"></param>
+        private void receiveOfferMessage(IPEndPoint recieveEP)
+        {
             new Thread(() =>
             {
                 while (!tx && !Server.rx)
@@ -62,35 +106,26 @@ namespace Tikshoret
                     }
                 }
             }).Start();
-            //create the request msg
-            createRequestMsg();
-
-            while (!tx && !Server.rx && TIMEOUT > 0)
-            {
-                if (!tx && !Server.rx)
-                {
-                    //send the message to the server
-                    udpSender.Send(byteToSend, byteToSend.Length);
-                    Thread.Sleep(1000);
-                    TIMEOUT--;
-                }
-            }
-            //now we have the connect details to tcp
-            if (tx && !Server.rx)
-            {
-                connectToTcp();
-            }
         }
 
+        /// <summary>
+        /// this function print details about our situation
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <param name="timeout"></param>
+        /// <param name="udpPort"></param>
         private void printDetails(string hostName, int timeout, int udpPort)
         {
             Console.WriteLine();
             Console.WriteLine("Host name: {0} \t Udp port listening to {1} \t set timeout to {2} seconds", hostName, udpPort, timeout);
             Console.WriteLine("-------------------------------------------------------------------------------");
-            Console.WriteLine("Our network name: {0}",networkName);
+            Console.WriteLine("Our network name: {0}", networkName);
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// create request message
+        /// </summary>
         private void createRequestMsg()
         {
             //create the request message
@@ -106,6 +141,9 @@ namespace Tikshoret
             byteToSend = byteToSendList.ToArray();
         }
 
+        /// <summary>
+        /// connect to tcp
+        /// </summary>
         private void connectToTcp()
         {
             //seperate the string with the details to ip and port
@@ -134,6 +172,12 @@ namespace Tikshoret
             while (true) ;
         }
 
+        /// <summary>
+        /// check our status 
+        /// rx=false,tx=true
+        /// or
+        /// rx=true,tx=true
+        /// </summary>
         private void checkTheStatus()
         {
             //rx=false && tx=true
@@ -157,6 +201,9 @@ namespace Tikshoret
             }
         }
 
+        /// <summary>
+        /// In this status we get a string from the user and transfer to the server
+        /// </summary>
         private void rx_off_tx_on()
         {
             string input = getInputFromTheUser();
@@ -166,6 +213,10 @@ namespace Tikshoret
             client.Client.Send(sendToTheServer);
         }
 
+        /// <summary>
+        /// This function get string from the user
+        /// </summary>
+        /// <returns></returns>
         private string getInputFromTheUser()
         {
             Console.WriteLine("please enter input: ");

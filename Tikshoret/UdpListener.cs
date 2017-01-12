@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Tikshoret
 {
+    /// <summary>
+    /// This is an helper class 
+    /// </summary>
     class UdpListener
     {
         UdpClient uc;
