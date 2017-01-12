@@ -51,8 +51,6 @@ namespace Tikshoret
             //thread
             new Thread(() =>
             {
-                Program.m.WaitOne();
-                Console.WriteLine("--------------------------------------------------------");
                 s = listener.AcceptSocket();
                 Console.WriteLine("{0} connected", s.RemoteEndPoint);
                 rx = true;
@@ -65,8 +63,6 @@ namespace Tikshoret
                 Console.WriteLine();
                 //change the status
                 EndPoint ep = s.RemoteEndPoint;
-                Console.WriteLine("the server Connected to {0}", s.RemoteEndPoint);
-                Program.m.ReleaseMutex();
             }).Start();
             //wait for a message
         }
@@ -92,11 +88,10 @@ namespace Tikshoret
                 {
 
                     data = udpServer.Receive(ref groupEP);
-                    Program.m.WaitOne();
                     if (!ipArr.Contains(groupEP.Address) && data.Length == 20)
                     {
                         string msgRcvd = System.Text.Encoding.UTF8.GetString(data, 0, data.Length);
-                        Console.WriteLine("server recieved {0} length {1}", msgRcvd, data.Length);
+                        Console.WriteLine("Offer received");
                         //take the number that the client sent in request message
                         byte[] rndNum = new byte[4];
                         rndNum[0] = data[16];
@@ -121,7 +116,6 @@ namespace Tikshoret
                         udpServer.Send(msg, msg.Length, groupEP);
                         Console.WriteLine("send offer");
                     }
-                    Program.m.ReleaseMutex();
                 }
             }
             catch (Exception e)

@@ -11,10 +11,10 @@ namespace Tikshoret
 {
     class Program
     {
-        public static Mutex m = new Mutex();
 
         static void Main(string[] args)
         {
+            introduction();
             UdpListener ul = new UdpListener(6000);
             UdpClient udpReceiver = ul.getUdpListener();
             Thread t = new Thread(() =>
@@ -43,7 +43,12 @@ namespace Tikshoret
             Console.ReadKey();
         }
 
-
+        private static void introduction()
+        {
+            Console.WriteLine("****************************************************");
+            Console.WriteLine("****       Welcome to the broken phone app      ****");
+            Console.WriteLine("****************************************************");
+        }
 
         private static void openServer(UdpClient uc)
         {

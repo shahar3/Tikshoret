@@ -23,6 +23,8 @@ namespace Tikshoret
         string requestMessage;
         byte[] offer = null;
         public static Mutex m;
+        int TIMEOUT = 60;
+        const string networkName = "Networking17YHSC";
         #endregion
 
 
@@ -32,25 +34,22 @@ namespace Tikshoret
             udpReciever = uc;
             string compName = Dns.GetHostName();
             IPHostEntry compIp = Dns.GetHostEntry(compName);
-            Console.WriteLine("Comp name: {0}", compName);
             IPAddress broadcast = IPAddress.Parse("192.168.1.255");
             IPEndPoint ep = new IPEndPoint(broadcast, 6000);
             IPEndPoint recieveEP = new IPEndPoint(IPAddress.Any, 6000);
-            Console.WriteLine("created client");
+            printDetails(compName, TIMEOUT, 6000);
             udpSender.Connect(ep);
-            string hostName = Dns.GetHostName();
-            IPHostEntry ipEntry = Dns.GetHostEntry(hostName);
+            IPHostEntry ipEntry = Dns.GetHostEntry(compName);
             ipArr = ipEntry.AddressList;
 
 
             new Thread(() =>
             {
-                while (!tx)
+                while (!tx && !Server.rx)
                 {
                     received = udpReciever.Receive(ref recieveEP);
                     if (!ipArr.Contains(recieveEP.Address))
                     {
-                        Program.m.WaitOne();
                         if (received.Length == 26)
                         {
                             //change the status
@@ -60,23 +59,20 @@ namespace Tikshoret
                             portToConnectTcp = System.Text.Encoding.UTF8.GetString(received, 0, received.Length);
                             Console.WriteLine("Offer msg receieved from the server " + portToConnectTcp);
                         }
-                        Program.m.ReleaseMutex();
                     }
                 }
             }).Start();
             //create the request msg
             createRequestMsg();
 
-            while (!tx && !Server.rx)
+            while (!tx && !Server.rx && TIMEOUT > 0)
             {
                 if (!tx && !Server.rx)
                 {
-                    Program.m.WaitOne();
                     //send the message to the server
                     udpSender.Send(byteToSend, byteToSend.Length);
-                    Console.WriteLine("The client send the requst message");
                     Thread.Sleep(1000);
-                    Program.m.ReleaseMutex();
+                    TIMEOUT--;
                 }
             }
             //now we have the connect details to tcp
@@ -86,6 +82,15 @@ namespace Tikshoret
             }
         }
 
+        private void printDetails(string hostName, int timeout, int udpPort)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Host name: {0} \t Udp port listening to {1} \t set timeout to {2} seconds", hostName, udpPort, timeout);
+            Console.WriteLine("-------------------------------------------------------------------------------");
+            Console.WriteLine("Our network name: {0}",networkName);
+            Console.WriteLine();
+        }
+
         private void createRequestMsg()
         {
             //create the request message
@@ -93,7 +98,7 @@ namespace Tikshoret
             int randomNumtoSend = rnd.Next();
             byte[] rndNumByte = BitConverter.GetBytes(randomNumtoSend);
             List<byte> byteToSendList = new List<byte>();
-            requestMessage = "Networking17YYYY";
+            requestMessage = networkName;
             //convert the message to bytes array
             byteToSend = System.Text.Encoding.UTF8.GetBytes(requestMessage);
             byteToSendList.AddRange(byteToSend);
@@ -125,8 +130,6 @@ namespace Tikshoret
             //connect to the TCP
             client = new TcpClient();
             client.ConnectAsync(ipAddress, port);
-            Console.WriteLine("The client connected to the Tcp");
-
             checkTheStatus();
             while (true) ;
         }
